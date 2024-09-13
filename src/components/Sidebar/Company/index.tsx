@@ -1,7 +1,7 @@
 /** @jsxImportSource @emotion/react */
 import { css } from "@emotion/react";
 import React, { useState } from "react";
-import { Table, Button, Space, Modal, Form, Input } from "antd";
+import { Table, Button, Space, Drawer, Form, Input } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
 import {
@@ -41,13 +41,13 @@ const CompanyTable: React.FC = () => {
     (state: RootState) => state.companies.companies
   );
   const [editingCompany, setEditingCompany] = useState<Company | null>(null);
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [isEditDrawerVisible, setIsEditDrawerVisible] = useState(false);
+  const [isAddDrawerVisible, setIsAddDrawerVisible] = useState(false);
   const [form] = Form.useForm();
 
   const handleEdit = (record: Company) => {
     setEditingCompany(record);
-    setIsEditModalVisible(true);
+    setIsEditDrawerVisible(true);
     form.setFieldsValue({
       title: record.title,
       description: record.description,
@@ -60,25 +60,25 @@ const CompanyTable: React.FC = () => {
     dispatch(deleteCompany(id));
   };
 
-  const handleCloseEditModal = () => {
-    setIsEditModalVisible(false);
+  const handleCloseEditDrawer = () => {
+    setIsEditDrawerVisible(false);
     setEditingCompany(null);
   };
 
-  const handleCloseAddModal = () => {
-    setIsAddModalVisible(false);
+  const handleCloseAddDrawer = () => {
+    setIsAddDrawerVisible(false);
   };
 
   const handleSubmitEdit = (values: any) => {
     if (editingCompany) {
       dispatch(editCompany({ ...editingCompany, ...values }));
-      handleCloseEditModal();
+      handleCloseEditDrawer();
     }
   };
 
   const handleSubmitAdd = (values: any) => {
     dispatch(addCompany(values));
-    handleCloseAddModal();
+    handleCloseAddDrawer();
   };
 
   const columns = [
@@ -127,7 +127,7 @@ const CompanyTable: React.FC = () => {
       <Button
         type="primary"
         icon={<PlusOutlined />}
-        onClick={() => setIsAddModalVisible(true)}
+        onClick={() => setIsAddDrawerVisible(true)}
         style={{ marginBottom: "16px" }}
       >
         Yangi kompaniya qo'shish
@@ -138,16 +138,29 @@ const CompanyTable: React.FC = () => {
         rowKey="id"
         pagination={false}
       />
-      {/* Edit Modal */}
-      <Modal
-        visible={isEditModalVisible}
+      {/* Edit Drawer */}
+      <Drawer
         title="Kompaniyani tahrirlash"
-        okText="Saqlash"
-        cancelText="Bekor qilish"
-        onCancel={handleCloseEditModal}
-        onOk={() => form.submit()}
+        width={720}
+        visible={isEditDrawerVisible}
+        onClose={handleCloseEditDrawer}
+        footer={
+          <div style={{ textAlign: "right" }}>
+            <Button onClick={handleCloseEditDrawer} style={{ marginRight: 8 }}>
+              Bekor qilish
+            </Button>
+            <Button
+              form="edit-form"
+              key="submit"
+              htmlType="submit"
+              type="primary"
+            >
+              Saqlash
+            </Button>
+          </div>
+        }
       >
-        <Form form={form} onFinish={handleSubmitEdit}>
+        <Form form={form} id="edit-form" onFinish={handleSubmitEdit}>
           <Form.Item
             name="title"
             label="Nomi"
@@ -170,17 +183,30 @@ const CompanyTable: React.FC = () => {
             <Input />
           </Form.Item>
         </Form>
-      </Modal>
-      {/* Add Modal */}
-      <Modal
-        visible={isAddModalVisible}
+      </Drawer>
+      {/* Add Drawer */}
+      <Drawer
         title="Yangi kompaniya qo'shish"
-        okText="Qo'shish"
-        cancelText="Bekor qilish"
-        onCancel={handleCloseAddModal}
-        onOk={() => form.submit()}
+        width={720}
+        visible={isAddDrawerVisible}
+        onClose={handleCloseAddDrawer}
+        footer={
+          <div style={{ textAlign: "right" }}>
+            <Button onClick={handleCloseAddDrawer} style={{ marginRight: 8 }}>
+              Bekor qilish
+            </Button>
+            <Button
+              form="add-form"
+              key="submit"
+              htmlType="submit"
+              type="primary"
+            >
+              Qo'shish
+            </Button>
+          </div>
+        }
       >
-        <Form form={form} onFinish={handleSubmitAdd}>
+        <Form form={form} id="add-form" onFinish={handleSubmitAdd}>
           <Form.Item
             name="title"
             label="Nomi"
@@ -203,7 +229,7 @@ const CompanyTable: React.FC = () => {
             <Input />
           </Form.Item>
         </Form>
-      </Modal>
+      </Drawer>
     </div>
   );
 };

@@ -1,11 +1,13 @@
 /** @jsxImportSource @emotion/react */
 import { css } from "@emotion/react";
 import React, { useState } from "react";
-import { Table, Button, Space, Modal, Form, Input } from "antd";
+import { Table, Button, Space, Drawer, Form, Input, Select } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
 import { deleteJob, editJob, addJob } from "../store/slices/JobSlice";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+
+const { Option } = Select;
 
 interface Job {
   id: string;
@@ -49,15 +51,18 @@ const tableStyle = css`
 const JobsTable: React.FC = () => {
   const dispatch = useDispatch();
   const jobs = useSelector((state: RootState) => state.jobs.jobs);
+  const companies = useSelector(
+    (state: RootState) => state.companies.companies
+  ); // Assuming you have companies in state
 
   const [editingJob, setEditingJob] = useState<Job | null>(null);
-  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [isAddModalVisible, setIsAddModalVisible] = useState(false);
+  const [isEditDrawerVisible, setIsEditDrawerVisible] = useState(false);
+  const [isAddDrawerVisible, setIsAddDrawerVisible] = useState(false);
   const [form] = Form.useForm();
 
   const handleEdit = (record: Job) => {
     setEditingJob(record);
-    setIsEditModalVisible(true);
+    setIsEditDrawerVisible(true);
     form.setFieldsValue(record);
   };
 
@@ -65,25 +70,25 @@ const JobsTable: React.FC = () => {
     dispatch(deleteJob(id));
   };
 
-  const handleCloseEditModal = () => {
-    setIsEditModalVisible(false);
+  const handleCloseEditDrawer = () => {
+    setIsEditDrawerVisible(false);
     setEditingJob(null);
   };
 
-  const handleCloseAddModal = () => {
-    setIsAddModalVisible(false);
+  const handleCloseAddDrawer = () => {
+    setIsAddDrawerVisible(false);
   };
 
   const handleSubmitEdit = (values: any) => {
     if (editingJob) {
       dispatch(editJob({ ...editingJob, ...values }));
-      handleCloseEditModal();
+      handleCloseEditDrawer();
     }
   };
 
   const handleSubmitAdd = (values: any) => {
     dispatch(addJob(values));
-    handleCloseAddModal();
+    handleCloseAddDrawer();
   };
 
   const columns = [
@@ -152,7 +157,7 @@ const JobsTable: React.FC = () => {
       <Button
         type="primary"
         icon={<PlusOutlined />}
-        onClick={() => setIsAddModalVisible(true)}
+        onClick={() => setIsAddDrawerVisible(true)}
       >
         Add Job
       </Button>
@@ -163,16 +168,29 @@ const JobsTable: React.FC = () => {
         rowKey="id"
         pagination={false}
       />
-      {/* Edit Modal */}
-      <Modal
-        visible={isEditModalVisible}
+      {/* Edit Drawer */}
+      <Drawer
         title="Edit Job"
-        okText="Save"
-        cancelText="Cancel"
-        onCancel={handleCloseEditModal}
-        onOk={() => form.submit()}
+        width={720}
+        visible={isEditDrawerVisible}
+        onClose={handleCloseEditDrawer}
+        footer={
+          <div style={{ textAlign: "right" }}>
+            <Button onClick={handleCloseEditDrawer} style={{ marginRight: 8 }}>
+              Cancel
+            </Button>
+            <Button
+              form="edit-form"
+              key="submit"
+              htmlType="submit"
+              type="primary"
+            >
+              Save
+            </Button>
+          </div>
+        }
       >
-        <Form form={form} onFinish={handleSubmitEdit}>
+        <Form form={form} id="edit-form" onFinish={handleSubmitEdit}>
           <Form.Item
             name="title"
             label="Title"
@@ -220,18 +238,44 @@ const JobsTable: React.FC = () => {
           <Form.Item name="instagram" label="Instagram">
             <Input />
           </Form.Item>
+          <Form.Item
+            name="companyId"
+            label="Company"
+            rules={[{ required: true, message: "Please select a company!" }]}
+          >
+            <Select placeholder="Select a company">
+              {companies.map((company) => (
+                <Option key={company.id} value={company.id}>
+                  {company.title}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
         </Form>
-      </Modal>
-      {/* Add Modal */}
-      <Modal
-        visible={isAddModalVisible}
+      </Drawer>
+      {/* Add Drawer */}
+      <Drawer
         title="Add Job"
-        okText="Add"
-        cancelText="Cancel"
-        onCancel={handleCloseAddModal}
-        onOk={() => form.submit()}
+        width={720}
+        visible={isAddDrawerVisible}
+        onClose={handleCloseAddDrawer}
+        footer={
+          <div style={{ textAlign: "right" }}>
+            <Button onClick={handleCloseAddDrawer} style={{ marginRight: 8 }}>
+              Cancel
+            </Button>
+            <Button
+              form="add-form"
+              key="submit"
+              htmlType="submit"
+              type="primary"
+            >
+              Add
+            </Button>
+          </div>
+        }
       >
-        <Form form={form} onFinish={handleSubmitAdd}>
+        <Form form={form} id="add-form" onFinish={handleSubmitAdd}>
           <Form.Item
             name="title"
             label="Title"
@@ -279,8 +323,21 @@ const JobsTable: React.FC = () => {
           <Form.Item name="instagram" label="Instagram">
             <Input />
           </Form.Item>
+          <Form.Item
+            name="companyId"
+            label="Company"
+            rules={[{ required: true, message: "Please select a company!" }]}
+          >
+            <Select placeholder="Select a company">
+              {companies.map((company) => (
+                <Option key={company.id} value={company.id}>
+                  {company.title}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
         </Form>
-      </Modal>
+      </Drawer>
     </div>
   );
 };
