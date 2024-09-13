@@ -1,93 +1,69 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface Genre {
-  id: number;
+interface Company {
+  id: string;
   title: string;
-  description: string;
-  image: string;
-  website: string;
+  description?: string;
+  image?: string;
+  website?: string;
 }
 
-interface GenreState {
-  genres: Genre[];
+interface CompaniesState {
+  companies: Company[];
 }
 
-const initialState: GenreState = {
-  genres: [
+const initialState: CompaniesState = {
+  companies: [
     {
-      id: 1,
+      id: "1",
+      title: "Tesla",
+      description: "Electric vehicle and clean energy company.",
+      image:
+        "https://th.bing.com/th/id/OIP.sLMJb7kG4Ml52cOMI0zzyQHaEK?rs=1&pid=ImgDetMain",
+      website: "https://www.tesla.com",
+    },
+    {
+      id: "2",
+      title: "Apple",
+      description: "Technology company that designs and sells electronics.",
+      image:
+        "https://media.wired.com/photos/6081f4280c9b5877078878e2/master/w_2560%2Cc_limit/business_plaintext_apple_1313768378.jpg",
+      website: "https://www.apple.com",
+    },
+    {
+      id: "3",
       title: "Google",
-      description:
-        "Every company has a culture that can heavily impact its productivity, employee morale and overall brand reputation.",
+      description: "Search engine and internet-related services company.",
       image:
-        "https://assets.entrepreneur.com/content/3x2/2000/20150805204041-google-company-building-corporate.jpeg",
-      website:
-        "https://www.entrepreneur.com/growing-a-business/10-examples-of-companies-with-fantastic-cultures/249174",
-    },
-    {
-      id: 2,
-      title: "Private Limited Company",
-      description:
-        "Company Registration in India Private Limited Company Registration in India",
-      image:
-        "https://ezybizindia.in/wp-content/uploads/2016/01/Private-Limited-company.jpg",
-      website:
-        "https://ezybizindia.in/services/private-limited-company-registration/",
-    },
-    {
-      id: 3,
-      title: "Company",
-      description:
-        "What is a Company? Definition, Characteristics, Advantages, Disadvantages",
-      image:
-        "https://i0.wp.com/www.iedunote.com/img/23559/what-is-a-company-1.jpg?fit=1087%2C720&quality=100&ssl=1",
-      website:
-        "https://www.iedunote.com/company-definition-characteristics-advantages-disadvantages",
+        "https://th.bing.com/th/id/OIP.Z8YCot4USmiAnGGuU9wEpgHaE8?rs=1&pid=ImgDetMain",
+      website: "https://www.google.com",
     },
   ],
 };
 
-const genreSlice = createSlice({
-  name: "genre",
+const companiesSlice = createSlice({
+  name: "companies",
   initialState,
   reducers: {
-    addGenre: (
-      state,
-      action: PayloadAction<{
-        title: string;
-        description: string;
-        image: string;
-        website: string;
-      }>
-    ) => {
-      const nextId =
-        state.genres.length > 0
-          ? Math.max(...state.genres.map((g) => g.id)) + 1
-          : 1;
-      const newGenre: Genre = {
-        id: nextId,
-        title: action.payload.title,
-        description: action.payload.description,
-        image: action.payload.image,
-        website: action.payload.website,
-      };
-      state.genres.push(newGenre);
+    deleteCompany: (state, action: PayloadAction<string>) => {
+      state.companies = state.companies.filter(
+        (company) => company.id !== action.payload
+      );
     },
-    editGenre: (state, action: PayloadAction<Genre>) => {
-      const { id, title, description, image, website } = action.payload;
-      const genre = state.genres.find((g) => g.id === id);
-      if (genre) {
-        genre.title = title;
-        genre.description = description;
-        genre.image = image;
-        genre.website = website;
+    editCompany: (state, action: PayloadAction<Company>) => {
+      const index = state.companies.findIndex(
+        (company) => company.id === action.payload.id
+      );
+      if (index !== -1) {
+        state.companies[index] = action.payload;
       }
     },
-    deleteGenre: (state, action: PayloadAction<number>) => {
-      state.genres = state.genres.filter((g) => g.id !== action.payload);
+    addCompany: (state, action: PayloadAction<Company>) => {
+      state.companies.push(action.payload);
     },
   },
 });
 
-export const { addGenre, editGenre, deleteGenre } = genreSlice.actions;
-export default genreSlice.reducer;
+export const { deleteCompany, editCompany, addCompany } =
+  companiesSlice.actions;
+export default companiesSlice.reducer;

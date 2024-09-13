@@ -1,244 +1,288 @@
 /** @jsxImportSource @emotion/react */
-import React, { useState } from "react";
 import { css } from "@emotion/react";
-import { useSelector, useDispatch } from "react-redux";
-import { Table, Button, Modal, Form, Input } from "antd";
+import React, { useState } from "react";
+import { Table, Button, Space, Modal, Form, Input } from "antd";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store";
-import { deleteMovie, editMovie, addMovie } from "../store/slices/JobSlice";
+import { deleteJob, editJob, addJob } from "../store/slices/JobSlice";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
-interface Movie {
-  id: number;
+interface Job {
+  id: string;
   title: string;
   description: string;
-  technologies: string;
-  location: string;
+  technologies: string[];
+  location?: string;
   salary: string;
-  phone: string;
-  email: string;
-  telegram: string;
-  instagram: string;
-  companyId: string;
+  phone?: string;
+  email?: string;
+  telegram?: string;
+  instagram?: string;
+  companyId: number;
 }
 
-const MovieTable = () => {
-  const movies = useSelector((state: RootState) => state.movies);
+const tableStyle = css`
+  background-color: white;
+  color: black;
+  border-radius: 10px;
+  padding: 20px;
+
+  .table-container {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .table-header {
+    margin-bottom: 16px;
+  }
+
+  .ant-table-thead > tr > th {
+    background-color: white;
+    color: black;
+  }
+
+  .ant-table-tbody > tr > td {
+    color: black;
+  }
+`;
+
+const JobsTable: React.FC = () => {
   const dispatch = useDispatch();
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const jobs = useSelector((state: RootState) => state.jobs.jobs);
+
+  const [editingJob, setEditingJob] = useState<Job | null>(null);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-  const [editingMovie, setEditingMovie] = useState<Movie | null>(null);
   const [form] = Form.useForm();
 
-  const handleEdit = (record: Movie) => {
-    setEditingMovie(record);
+  const handleEdit = (record: Job) => {
+    setEditingJob(record);
+    setIsEditModalVisible(true);
     form.setFieldsValue(record);
-    setIsModalVisible(true);
   };
 
-  const handleDelete = (id: number) => {
-    dispatch(deleteMovie(id));
+  const handleDelete = (id: string) => {
+    dispatch(deleteJob(id));
   };
 
-  const handleOk = (values: Partial<Movie>) => {
-    if (editingMovie) {
-      dispatch(editMovie({ ...editingMovie, ...values } as Movie));
-    } else {
-      // Handle adding a new movie
-      dispatch(addMovie({ ...values, id: Date.now() } as Movie));
-    }
-    setIsModalVisible(false);
+  const handleCloseEditModal = () => {
+    setIsEditModalVisible(false);
+    setEditingJob(null);
+  };
+
+  const handleCloseAddModal = () => {
     setIsAddModalVisible(false);
+  };
+
+  const handleSubmitEdit = (values: any) => {
+    if (editingJob) {
+      dispatch(editJob({ ...editingJob, ...values }));
+      handleCloseEditModal();
+    }
+  };
+
+  const handleSubmitAdd = (values: any) => {
+    dispatch(addJob(values));
+    handleCloseAddModal();
   };
 
   const columns = [
     {
-      id: 1,
-      title: "Admin",
-      description:
-        "This article covers meaning & importance of Job Title from HRM perspective.",
-      technologies: "Web",
-      location: "Tashkent",
-      salary: "Physical Therapist",
-      phone: "+998936754532",
-      email: "admin@gmail.com",
-      telegram: "@Admin",
-      instagram: "@Admin_01",
-      companyId: "1",
-      render: (text: string) => <img src={text} alt="Movie" width={50} />,
+      title: "Job Title",
+      dataIndex: "title",
+      key: "title",
+      sorter: (a: Job, b: Job) => a.title.localeCompare(b.title),
     },
-    { title: "Job", dataIndex: "name", key: "title" },
-    { title: "description", dataIndex: "description", key: "description" },
-    { title: "technologies", dataIndex: "technology", key: "technology" },
-    { title: "location", dataIndex: "location", key: "location" },
-    { title: "salary", dataIndex: "salary", key: "salary" },
-    { title: "phone", dataIndex: "phone", key: "phone" },
-    { title: "email", dataIndex: "email", key: "email" },
-    { title: "telegram", dataIndex: "telegram", key: "telegram" },
-    { title: "instagram", dataIndex: "instagram", key: "instagram" },
-    { title: "CompanyId", dataIndex: "CompanyId", key: "CompanyId" },
+    {
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+    },
+    {
+      title: "Technologies",
+      dataIndex: "technologies",
+      key: "technologies",
+      render: (technologies: string[]) => technologies.join(", "),
+    },
+    {
+      title: "Location",
+      dataIndex: "location",
+      key: "location",
+    },
+    {
+      title: "Salary",
+      dataIndex: "salary",
+      key: "salary",
+    },
+    {
+      title: "Contact",
+      dataIndex: "contact",
+      key: "contact",
+      render: (_: any, record: Job) => (
+        <>
+          {record.phone && <div>Phone: {record.phone}</div>}
+          {record.email && <div>Email: {record.email}</div>}
+          {record.telegram && <div>Telegram: {record.telegram}</div>}
+          {record.instagram && <div>Instagram: {record.instagram}</div>}
+        </>
+      ),
+    },
     {
       title: "Actions",
       key: "action",
-      render: (_: any, record: Movie) => (
-        <>
-          <Button onClick={() => handleEdit(record)} icon={<EditOutlined />} />
+      render: (record: Job) => (
+        <Space size="middle">
           <Button
-            onClick={() => handleDelete(record.id)}
-            danger
-            icon={<DeleteOutlined />}
+            icon={<EditOutlined />}
+            type="primary"
+            onClick={() => handleEdit(record)}
           />
-        </>
+          <Button
+            icon={<DeleteOutlined />}
+            danger
+            onClick={() => handleDelete(record.id)}
+          />
+        </Space>
       ),
     },
   ];
 
-  const tableStyles = css`
-    .ant-table {
-      color: black;
-    }
-    .ant-btn {
-      margin-right: 10px;
-    }
-
-    .ant-modal-content {
-      color: white;
-    }
-    .ant-form-item-label > label {
-      color: white;
-    }
-    .ant-input {
-      background-color: #555;
-      color: white;
-      border: 1px solid #888;
-    }
-    .ant-btn-primary {
-      background-color: #4caf50;
-      border-color: #4caf50;
-    }
-    .ant-btn-danger {
-      background-color: #f44336;
-      border-color: #f44336;
-    }
-    .add-button {
-      float: right;
-      margin-bottom: 20px;
-    }
-  `;
-
   return (
-    <div css={tableStyles}>
+    <div css={tableStyle}>
       <Button
-        className="add-button"
-        onClick={() => setIsAddModalVisible(true)}
+        type="primary"
         icon={<PlusOutlined />}
+        onClick={() => setIsAddModalVisible(true)}
       >
-        Add
+        Add Job
       </Button>
-      <Table columns={columns} dataSource={movies} rowKey="id" />
+      <div className="table-header"></div>
+      <Table
+        columns={columns}
+        dataSource={jobs}
+        rowKey="id"
+        pagination={false}
+      />
+      {/* Edit Modal */}
       <Modal
-        title={editingMovie ? "Edit Movie" : "Add Movie"}
-        visible={isModalVisible || isAddModalVisible}
-        onCancel={() => {
-          setIsModalVisible(false);
-          setIsAddModalVisible(false);
-        }}
-        footer={null}
+        visible={isEditModalVisible}
+        title="Edit Job"
+        okText="Save"
+        cancelText="Cancel"
+        onCancel={handleCloseEditModal}
+        onOk={() => form.submit()}
       >
-        <Form form={form} onFinish={handleOk}>
+        <Form form={form} onFinish={handleSubmitEdit}>
           <Form.Item
             name="title"
-            label=""
-            rules={[
-              { required: true, message: "Please enter the movie title" },
-            ]}
+            label="Title"
+            rules={[{ required: true, message: "Please input the job title!" }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="description"
-            label=""
+            label="Description"
             rules={[
-              { required: true, message: "Please enter the Gen description" },
+              { required: true, message: "Please input the job description!" },
             ]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="technologies"
-            label=""
+            label="Technologies"
             rules={[
-              {
-                required: true,
-                message: "Please enter the release technologies",
-              },
+              { required: true, message: "Please input the technologies!" },
             ]}
           >
             <Input />
           </Form.Item>
-          <Form.Item
-            name="location"
-            label=""
-            rules={[
-              {
-                required: true,
-                message: "Please enter the director's location",
-              },
-            ]}
-          >
+          <Form.Item name="location" label="Location">
             <Input />
           </Form.Item>
           <Form.Item
             name="salary"
-            label=""
+            label="Salary"
+            rules={[{ required: true, message: "Please input the salary!" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item name="phone" label="Phone">
+            <Input />
+          </Form.Item>
+          <Form.Item name="email" label="Email">
+            <Input />
+          </Form.Item>
+          <Form.Item name="telegram" label="Telegram">
+            <Input />
+          </Form.Item>
+          <Form.Item name="instagram" label="Instagram">
+            <Input />
+          </Form.Item>
+        </Form>
+      </Modal>
+      {/* Add Modal */}
+      <Modal
+        visible={isAddModalVisible}
+        title="Add Job"
+        okText="Add"
+        cancelText="Cancel"
+        onCancel={handleCloseAddModal}
+        onOk={() => form.submit()}
+      >
+        <Form form={form} onFinish={handleSubmitAdd}>
+          <Form.Item
+            name="title"
+            label="Title"
+            rules={[{ required: true, message: "Please input the job title!" }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item
+            name="description"
+            label="Description"
             rules={[
-              { required: true, message: "Please enter the movie salary" },
+              { required: true, message: "Please input the job description!" },
             ]}
           >
             <Input />
           </Form.Item>
           <Form.Item
-            name="email"
-            label=""
+            name="technologies"
+            label="Technologies"
             rules={[
-              { required: true, message: "Please enter the movie email" },
+              { required: true, message: "Please input the technologies!" },
             ]}
           >
+            <Input />
+          </Form.Item>
+          <Form.Item name="location" label="Location">
             <Input />
           </Form.Item>
           <Form.Item
-            name="telegram"
-            label=""
-            rules={[
-              { required: true, message: "Please enter the movie telegram" },
-            ]}
+            name="salary"
+            label="Salary"
+            rules={[{ required: true, message: "Please input the salary!" }]}
           >
             <Input />
           </Form.Item>
-          <Form.Item
-            name="instagram"
-            label=""
-            rules={[
-              { required: true, message: "Please enter the movie instagram" },
-            ]}
-          >
+          <Form.Item name="phone" label="Phone">
             <Input />
           </Form.Item>
-          <Form.Item
-            name="CompanyId"
-            label=""
-            rules={[
-              { required: true, message: "Please enter the movie CompanyId" },
-            ]}
-          >
+          <Form.Item name="email" label="Email">
             <Input />
           </Form.Item>
-          <Button htmlType="submit" type="primary">
-            {editingMovie ? "Save" : "Add"}
-          </Button>
+          <Form.Item name="telegram" label="Telegram">
+            <Input />
+          </Form.Item>
+          <Form.Item name="instagram" label="Instagram">
+            <Input />
+          </Form.Item>
         </Form>
       </Modal>
     </div>
   );
 };
 
-export default MovieTable;
+export default JobsTable;

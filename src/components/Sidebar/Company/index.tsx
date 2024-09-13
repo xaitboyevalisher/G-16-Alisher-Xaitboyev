@@ -1,184 +1,206 @@
 /** @jsxImportSource @emotion/react */
-import { Table, Button, Popconfirm, Form, Input, Modal } from "antd";
-import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "../store";
-import { editGenre, deleteGenre, addGenre } from "../store/slices/CompanySlice";
-import { useState } from "react";
 import { css } from "@emotion/react";
+import React, { useState } from "react";
+import { Table, Button, Space, Modal, Form, Input } from "antd";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../store";
+import {
+  deleteCompany,
+  editCompany,
+  addCompany,
+} from "../store/slices/CompanySlice";
+import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 
-const GenreTableWithForm = () => {
+interface Company {
+  id: string;
+  title: string;
+  description?: string;
+  image?: string;
+  website?: string;
+}
+
+const tableStyle = css`
+  background-color: #f0f2f5;
+  color: #000;
+  border-radius: 10px;
+  padding: 20px;
+
+  .ant-table-thead > tr > th {
+    background-color: #e6f7ff;
+    color: #000;
+  }
+
+  .ant-table-tbody > tr > td {
+    color: #000;
+  }
+`;
+
+const CompanyTable: React.FC = () => {
   const dispatch = useDispatch();
-  const genres = useSelector((state: RootState) => state.genre);
-  const [editingGenre, setEditingGenre] = useState<{
-    id: number;
-    name: string;
-  } | null>(null);
+  const companies = useSelector(
+    (state: RootState) => state.companies.companies
+  );
+  const [editingCompany, setEditingCompany] = useState<Company | null>(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [form] = Form.useForm();
 
-  const handleEdit = (record: { id: number; name: string }) => {
-    setEditingGenre(record);
+  const handleEdit = (record: Company) => {
+    setEditingCompany(record);
     setIsEditModalVisible(true);
-    form.setFieldsValue({ name: record.name });
+    form.setFieldsValue({
+      title: record.title,
+      description: record.description,
+      image: record.image,
+      website: record.website,
+    });
   };
 
-  const handleDelete = (id: number) => {
-    dispatch(deleteGenre(id));
+  const handleDelete = (id: string) => {
+    dispatch(deleteCompany(id));
   };
 
-  const handleCancel = () => {
+  const handleCloseEditModal = () => {
     setIsEditModalVisible(false);
+    setEditingCompany(null);
+  };
+
+  const handleCloseAddModal = () => {
     setIsAddModalVisible(false);
-    setEditingGenre(null);
   };
 
-  const handleSave = () => {
-    form.validateFields().then((values) => {
-      if (editingGenre) {
-        dispatch(editGenre({ id: editingGenre.id, name: values.name }));
-        setIsEditModalVisible(false);
-        setEditingGenre(null);
-      }
-    });
+  const handleSubmitEdit = (values: any) => {
+    if (editingCompany) {
+      dispatch(editCompany({ ...editingCompany, ...values }));
+      handleCloseEditModal();
+    }
   };
 
-  const handleAdd = () => {
-    form.validateFields().then((values) => {
-      dispatch(addGenre({ name: values.name }));
-      setIsAddModalVisible(false);
-      form.resetFields();
-    });
+  const handleSubmitAdd = (values: any) => {
+    dispatch(addCompany(values));
+    handleCloseAddModal();
   };
 
   const columns = [
-    { title: "Job", dataIndex: "name", key: "title" },
-    { title: "description", dataIndex: "description", key: "description" },
-    { title: "image", dataIndex: "image", key: "image" },
-    { title: "website", dataIndex: "website", key: "website" },
     {
-      title: "Actions",
-      key: "actions",
-      render: (text: any, record: { id: number; name: string }) => (
-        <>
+      title: "Rasm",
+      dataIndex: "image",
+      render: (text: string) => (
+        <img src={text} alt="company logo" style={{ width: "80px" }} />
+      ),
+    },
+    {
+      title: "Nomi",
+      dataIndex: "title",
+      sorter: (a: Company, b: Company) => a.title.localeCompare(b.title),
+    },
+    {
+      title: "Tavsif",
+      dataIndex: "description",
+    },
+    {
+      title: "Veb-sayt",
+      dataIndex: "website",
+      render: (text: string) => (
+        <a href={text} target="_blank" rel="noopener noreferrer">
+          {text}
+        </a>
+      ),
+    },
+    {
+      title: "Harakatlar",
+      render: (record: Company) => (
+        <Space>
+          <Button icon={<EditOutlined />} onClick={() => handleEdit(record)} />
           <Button
-            icon={<EditOutlined />}
-            css={css`
-              margin-right: 10px;
-            `}
-            onClick={() => handleEdit(record)}
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record.id)}
+            danger
           />
-          <Popconfirm
-            title="Are you sure delete this genre?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button icon={<DeleteOutlined />} />
-          </Popconfirm>
-        </>
+        </Space>
       ),
     },
   ];
 
-  const containerStyles = css`
-    position: relative;
-    padding: 20px;
-  `;
-
-  const buttonStyles = css`
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    z-index: 10;
-  `;
-
-  const tableStyles = css`
-    margin-top: 60px; /* Adjust based on button height + margin */
-  `;
-
   return (
-    <div css={containerStyles}>
+    <div css={tableStyle}>
       <Button
         type="primary"
         icon={<PlusOutlined />}
-        css={buttonStyles}
         onClick={() => setIsAddModalVisible(true)}
+        style={{ marginBottom: "16px" }}
       >
-        Add Genre
+        Yangi kompaniya qo'shish
       </Button>
-      <div css={tableStyles}>
-        <Table dataSource={genres} columns={columns} rowKey="id" />
-      </div>
-
+      <Table
+        columns={columns}
+        dataSource={companies}
+        rowKey="id"
+        pagination={false}
+      />
+      {/* Edit Modal */}
       <Modal
-        title="Edit Genre"
         visible={isEditModalVisible}
-        onCancel={handleCancel}
-        onOk={handleSave}
+        title="Kompaniyani tahrirlash"
+        okText="Saqlash"
+        cancelText="Bekor qilish"
+        onCancel={handleCloseEditModal}
+        onOk={() => form.submit()}
       >
-        <Form form={form} layout="vertical">
+        <Form form={form} onFinish={handleSubmitEdit}>
           <Form.Item
             name="title"
-            label=""
-            rules={[
-              { required: true, message: "Please enter the movie title" },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="description"
-            label=""
-            rules={[
-              { required: true, message: "Please enter the Gen description" },
-            ]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="image"
-            label=""
+            label="Nomi"
             rules={[
               {
                 required: true,
-                message: "Please enter the release image",
+                message: "Iltimos, kompaniya nomini kiriting!",
               },
             ]}
           >
             <Input />
           </Form.Item>
-          <Form.Item
-            name="website"
-            label=""
-            rules={[
-              {
-                required: true,
-                message: "Please enter the director's website",
-              },
-            ]}
-          >
+          <Form.Item name="description" label="Tavsif">
+            <Input />
+          </Form.Item>
+          <Form.Item name="image" label="Rasm URL manzili">
+            <Input />
+          </Form.Item>
+          <Form.Item name="website" label="Veb-sayt">
             <Input />
           </Form.Item>
         </Form>
       </Modal>
-
+      {/* Add Modal */}
       <Modal
-        title="Add Genre"
         visible={isAddModalVisible}
-        onCancel={handleCancel}
-        onOk={handleAdd}
+        title="Yangi kompaniya qo'shish"
+        okText="Qo'shish"
+        cancelText="Bekor qilish"
+        onCancel={handleCloseAddModal}
+        onOk={() => form.submit()}
       >
-        <Form form={form} layout="vertical">
+        <Form form={form} onFinish={handleSubmitAdd}>
           <Form.Item
-            name="name"
-            label="Genre Name"
+            name="title"
+            label="Nomi"
             rules={[
-              { required: true, message: "Please input the genre name!" },
+              {
+                required: true,
+                message: "Iltimos, kompaniya nomini kiriting!",
+              },
             ]}
           >
-            <Input placeholder="Genre Name" />
+            <Input />
+          </Form.Item>
+          <Form.Item name="description" label="Tavsif">
+            <Input />
+          </Form.Item>
+          <Form.Item name="image" label="Rasm URL manzili">
+            <Input />
+          </Form.Item>
+          <Form.Item name="website" label="Veb-sayt">
+            <Input />
           </Form.Item>
         </Form>
       </Modal>
@@ -186,4 +208,4 @@ const GenreTableWithForm = () => {
   );
 };
 
-export default GenreTableWithForm;
+export default CompanyTable;

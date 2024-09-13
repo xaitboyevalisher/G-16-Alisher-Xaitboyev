@@ -1,26 +1,36 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import { Layout } from "antd";
+import Sidebar from "./components/Sidebar";
+import Company from "./components/Sidebar/Company";
+import Job from "./components/Sidebar/Job";
+import { Provider } from "react-redux";
+import { store } from "./components/Sidebar/store";
 
-function App() {
+const { Content, Sider } = Layout;
+
+const App = () => {
+  const [selectedKey, setSelectedKey] = useState<string>("1");
+
+  const handleMenuSelect = (key: string) => {
+    setSelectedKey(key);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Provider store={store}>
+      <Layout>
+        <Sider width={200}>
+          <Sidebar onSelect={handleMenuSelect} />
+        </Sider>
+
+        <Layout>
+          <Content style={{ padding: "20px" }}>
+            {selectedKey === "1" && <Company />}
+            {selectedKey === "2" && <Job />}
+          </Content>
+        </Layout>
+      </Layout>
+    </Provider>
   );
-}
+};
 
 export default App;

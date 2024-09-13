@@ -1,11 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
-import moviesReducer from "../store/slices/KinoSlice";
-import genreReducer from "../store/slices/JanrSlice";
+import jobsReducer from "../store/slices/JobSlice";
+import companiesReducer from "../store/slices/CompanySlice";
 
 export const store = configureStore({
   reducer: {
-    movies: moviesReducer,
-    genre: genreReducer,
+    jobs: jobsReducer,
+    companies: companiesReducer,
   },
 });
 

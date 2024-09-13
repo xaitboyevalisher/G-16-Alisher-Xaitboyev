@@ -1,78 +1,72 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-interface Movie {
-  id: number;
+interface Job {
+  id: string;
   title: string;
   description: string;
-  technologies: string;
-  location: string;
+  technologies: string[];
+  location?: string;
   salary: string;
-  phone: string;
-  email: string;
-  telegram: string;
-  instagram: string;
-  companyId: string;
+  phone?: string;
+  email?: string;
+  telegram?: string;
+  instagram?: string;
+  companyId: number;
 }
 
-interface MoviesState {
-  movies: Movie[];
+interface JobsState {
+  jobs: Job[];
 }
 
-const initialState: MoviesState = {
-  movies: [
+const initialState: JobsState = {
+  jobs: [
     {
-      id: 1,
-      title: "Admin",
-      description:
-        "This article covers meaning & importance of Job Title from HRM perspective.",
-      technologies: "Web",
+      id: "1",
+      title: "Frontend Developer",
+      description: "React va Redux asosida ishlaydigan frontend ishlab chiquvchi talab qilinadi.",
+      technologies: ["React", "Redux", "JavaScript", "CSS"],
       location: "Tashkent",
-      salary: "Physical Therapist",
-      phone: "+998936754532",
-      email: "admin@gmail.com",
-      telegram: "@Admin",
-      instagram: "@Admin_01",
-      companyId: "1",
+      salary: "3000 USD",
+      phone: "+998901234567",
+      email: "example@example.com",
+      telegram: "@frontenddev",
+      instagram: "@dev_insta",
+      companyId: 1,
     },
     {
-      id: 2,
-      title: "Menedjer",
-      description:
-        "Your job title might seem trivial, but it matters more than you think.",
-      technologies: "Sotuv bo'limini loyihalash",
-      location: "Uzbekistan",
-      salary: "Physical",
-      phone: "998973456789",
-      email: "menedjer@gmail.com",
-      telegram: "@Menedjer",
-      instagram: "@Menedjer_02",
-      companyId: "2",
+      id: "2",
+      title: "Backend Developer",
+      description: "Node.js va MongoDB asosida backend ishlab chiquvchi talab qilinadi.",
+      technologies: ["Node.js", "MongoDB", "Express"],
+      location: "Remote",
+      salary: "3500 USD",
+      phone: "+998901234568",
+      email: "backend@example.com",
+      telegram: "@backenddev",
+      instagram: "@backend_insta",
+      companyId: 2,
     },
   ],
 };
 
-const moviesSlice = createSlice({
-  name: "movies",
+const jobsSlice = createSlice({
+  name: "jobs",
   initialState,
   reducers: {
-    deleteMovie: (state, action: PayloadAction<number>) => {
-      state.movies = state.movies.filter(
-        (movie) => movie.id !== action.payload
-      );
+    deleteJob: (state, action: PayloadAction<string>) => {
+      state.jobs = state.jobs.filter((job) => job.id !== action.payload);
     },
-    editMovie: (state, action: PayloadAction<Movie>) => {
-      const index = state.movies.findIndex(
-        (movie) => movie.id === action.payload.id
-      );
-      if (index !== -1) {
-        state.movies[index] = action.payload;
+    editJob: (state, action: PayloadAction<Job>) => {
+      const index = state.jobs.findIndex((job) => job.id === action.payload.id);
+      if (index >= 0) {
+        state.jobs[index] = action.payload;
       }
     },
-    addMovie: (state, action: PayloadAction<Movie>) => {
-      state.movies.push(action.payload);
+    addJob: (state, action: PayloadAction<Job>) => {
+      state.jobs.push(action.payload);
     },
   },
 });
 
-export const { deleteMovie, editMovie, addMovie } = moviesSlice.actions;
-export default moviesSlice.reducer;
+export const { deleteJob, editJob, addJob } = jobsSlice.actions;
+export default jobsSlice.reducer;
